@@ -1,45 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Bond Web Service</title>
-  <style>
-    body { font-family: georgia; }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bond Web Service</title>
+    <style>
+      body {
+        background: #303e44;
+        animation: colorchange 10s infinite;
+        text-align: center;
+        color: snow;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      a {
+        display: inline-block;
+        font-weight: bold;
+        text-decoration: none;
+        color: snow;
+        background-color: #e77dc2;
+        padding: 10px 20px;
+        border-radius: 25px;
+        border: 2px solid #e77dc2;
+        transition: background-color 0.3s, color 0.3s;
+        width: 250px;
+        text-align: center;
+      }
+      a:hover {
+        background-color: snow;
+        color: #e77dc2;
+      }
+      .film {
+        border: 1px solid #e77dc2;
+        border-radius: 5px;
+        padding: 5px;
+        margin-bottom: 5px;
+        position: relative;
+        width:750px;
+        display: inline-block;
+        align-items: center;
+      }
 
-  </style>
-</head>
-<body>
-  <h1>Bond Web Service</h1>
-  <a href="year" class="category">Bond Films By Year</a><br />
-  <a href="box" class="category">Bond Films By International Box Office Totals</a>
-  <h3 id="filmtitle">Title Will Go Here</h3>
-  <div id="films"><p>Films will go here</p></div>
-  <div id="output">Results go here</div>
+      .pic {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+      }
+      #links {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      @keyframes colorchange {
+        0% {
+          background: #303e44;
+        }
+        20% {
+          background: #2f3144;
+        }
+        40% {
+          background: #392f44;
+        }
+        60% {
+          background: #442f42;
+        }
+        80% {
+          background: #2f443c;
+        }
+        100% {
+          background: #293837;
+        }
+      }
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      document.querySelectorAll(".category").forEach(link => {
-        link.addEventListener("click", function (e) {
-          e.preventDefault();
-          const cat = this.getAttribute("href");
-          loadAJAX(cat);
+      @-webkit-keyframes colorchange {
+        0% {
+          background: #303e44;
+        }
+        20% {
+          background: #2f3144;
+        }
+        40% {
+          background: #392f44;
+        }
+        60% {
+          background: #442f42;
+        }
+        80% {
+          background: #2f443c;
+        }
+        100% {
+          background: #293837;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Bond Web Service</h1>
+    <div id="links">
+      <a href="year" class="category">Bond Films By Year</a>
+      <a href="box" class="category">Bond Films By International Box Office Totals</a>
+    </div>
+    <h3 id="filmtitle"></h3>
+    <div id="films"></div>
+    <div id="output"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".category").forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const cat = this.getAttribute("href");
+            loadAJAX(cat);
+          });
         });
       });
-    });
 
-    var url = "https://newmanix.com/classes/it122/bond-web-service/";
-    async function loadAJAX(cat) {
-      const endpoint = url + "api.php?cat=" + cat;
-      try {
-        const response = await fetch(endpoint, { method: "GET", mode: "cors" });
-        if (!response.ok) throw new Error("HTTP error " + response.status);
-        const data = await response.json();
-        console.log(data);
-      } catch (err) {
-        document.getElementById("output").innerText = "Error loading data: " + err;
+      var url = "https://newmanix.com/classes/it122/bond-web-service/";
+      async function loadAJAX(cat) {
+        document.getElementById("output").innerHTML = "";
+        const endpoint = url + "api.php?cat=" + cat;
+        try {
+          const response = await fetch(endpoint, {
+            method: "GET",
+            mode: "cors",
+          });
+          if (!response.ok) throw new Error("HTTP error " + response.status);
+          const data = await response.json();
+
+          document.getElementById("filmtitle").innerHTML = data.title;
+          data.films.forEach((film) => {
+            const filmHTML = bondTemplate(film);
+            document.getElementById("output").innerHTML += filmHTML;
+          });
+        } catch (err) {
+          document.getElementById("output").innerText =
+            "Error loading data: " + err;
+        }
       }
-    }
 
-  </script>
-</body>
+      function bondTemplate(film) {
+        return `
+          <div class="film">
+            <h2>${film.Title}</h2>
+            <p><strong>Year:</strong> ${film.Year}</p>
+            <p><strong>Director:</strong> ${film.Director}</p>
+            <p><strong>Producers:</strong> ${film.Producers}</p>
+            <p><strong>Writers:</strong> ${film.Writers}</p>
+            <p><strong>Composer:</strong> ${film.Composer}</p>
+            <p><strong>Bond Actor:</strong> ${film.Bond}</p>
+            <p><strong>Budget:</strong> ${film.Budget}</p>
+            <p><strong>Box Office:</strong> ${film.BoxOffice}</p>
+            <img class="pic" src="${url}/images/${film.Image}" alt="${film.Title} poster" width=100px height=100px/>
+          </div>
+        `;
+      }
+    </script>
+  </body>
 </html>
